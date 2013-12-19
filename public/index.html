@@ -338,7 +338,7 @@
 			console.log('reload', data);
 			score  = data.score;
 			for(var i = 0; i < data.p.length; i++){
-				paddles[data[i].u] = new Paddle(0.5, data[i].side, data[i].color);
+				paddles[data.p[i].u] = new Paddle(0.5, data.p[i].side, data.p[i].color);
 			}
 		});
 
