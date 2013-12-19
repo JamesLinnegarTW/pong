@@ -20,8 +20,6 @@ var score = [0,0];
 var static = require('node-static');
 var file = new static.Server('./public');
 var ball = {x: 0.5,y:0.0,speedX:0.005, speedY:0.0005};
-var speedY = 0.005;
-var speedX = 0.005;
 
 require('http').createServer(function (request, response) {
     request.addListener('end', function () {
@@ -166,10 +164,11 @@ function collisionDetect(side){
 }
 
 function resetBall(){
-    speedX = 0.005;
+
 
     ball.x = 0.5;
     ball.y = Math.random();
+    ball.speedX = 0.005;
 }
 
 setInterval(function(){
