@@ -244,5 +244,14 @@ setInterval(function(){
         for(var i= 0; i < clients.length; i++) {
             clients[i].emit('ball', ball);
         }
+
+        if(score[0] >= 21 || score[1] >= 21){
+            var winner = (score[0] > score[1])?0:1;
+            for(var i= 0; i < clients.length; i++) {
+                clients[i].emit('win', {score:[0,0],winner:winner});
+            }   
+            score = [0,0];
+
+        }
     }
 },10);
