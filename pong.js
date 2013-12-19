@@ -41,10 +41,6 @@ function noOfPlayers(){
     return Object.keys(paddles).length;
 }
 
-io.sockets.on('connection', function (socket) {
-    console.log("hello");
-    clients.push(socket);
-
     function reloadEverything(){
         var k = Object.keys(paddles);
         var temp = {};
@@ -58,6 +54,12 @@ io.sockets.on('connection', function (socket) {
         }
 
     }
+
+
+io.sockets.on('connection', function (socket) {
+    console.log("hello");
+    clients.push(socket);
+
     
     reloadEverything();
 
@@ -66,7 +68,7 @@ io.sockets.on('connection', function (socket) {
 
         var color = randomColor();
         socket.emit('color',color);
-        var newPaddle = {u: new Date(), y:0.5, side: (noOfPlayers() % 2), color:color};
+        var newPaddle = {u: new Date(), y:0.5, side: (noOfPlayers() % 2), color:color, lastMove: new Date()};
         paddles[socket.id] = newPaddle;
 
         for(var i= 0; i < clients.length; i++) {
@@ -79,6 +81,7 @@ io.sockets.on('connection', function (socket) {
         
         var paddle = paddles[socket.id];
         paddle.y = y;
+        paddle.lastMove = new Date();
         paddles[socket.id] = paddle;
         for(var i = 0; i < clients.length; i++) {
             clients[i].emit('moveUser', paddle);
@@ -95,14 +98,51 @@ io.sockets.on('connection', function (socket) {
             }
         }
 
-        if(paddles[socket.id]) delete paddles[socket.id];
-        
-        reloadEverything();
-
+        removePaddle(socket.id);
+    
     });
 
 
 });
+
+function removePaddle(id){
+        console.log('removing paddle', id);
+        if(paddles[id]) delete paddles[id]; 
+
+        for(var i = 0; i < clients.length; i++){
+            if (clients[i].id == id){
+                try {
+                    clients[i].disconnect();
+                    clients.splice(i,1);
+                    break;
+                } catch(e){}
+            }
+        }
+
+        reloadEverything();
+}
+
+function collisionDetect(side){
+   var keys = Object.keys(paddles);
+   var paddle;
+   
+
+    if(side == 1 && noOfPlayers() == 1){
+        return paddles[keys[0]].color;
+    }
+
+    for(var i = 0; i < keys.length; i++){
+        paddle = paddles[keys[i]];
+
+        if(ball.y >= (paddle.y - 0.1) &&
+           ball.y <= (paddle.y + 0.1) &&
+           paddle.side == side) {
+           return paddle.color;
+        }
+    }
+    return false;
+}
+
 
 function collisionDetect(side){
    var keys = Object.keys(paddles);
@@ -133,15 +173,31 @@ function resetBall(){
 }
 
 setInterval(function(){
+   var keys = Object.keys(paddles);
+   var paddle;
+   var now = new Date();
 
-    if(noOfPlayers() >= 1) {
+    for(var i = 0; i < keys.length; i++){
+        paddle = paddles[keys[i]];
+
+        if((!paddle.lastMove) || ((paddle.lastMove.getTime() + 10000) < now.getTime())) {
+            
+            removePaddle(keys[i]);
+        }
+    }
+
+},10000);
+
+setInterval(function(){
+
+    if(noOfPlayers() > 1) {
         ball.x = ball.x + ball.speedX;
         ball.y = ball.y + ball.speedY;
 
         if(ball.y < 0) {
             ball.speedY = -ball.speedY;
 
-            
+
         }
 
         if(ball.y > 1){
