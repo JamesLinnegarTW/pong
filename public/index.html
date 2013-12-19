@@ -287,9 +287,9 @@
 		    tmpCtx.drawImage(imageObj, (W/2) - (250/2), (H/2) - (75 / 2));
 		
 		    tmpCtx.fillStyle = "white";
-			tmpCtx.font="20px Georgia";
+			tmpCtx.font="20px Arial";
 			tmpCtx.textAlign = 'center'
-			tmpCtx.fillText(score[0] + ':' + score[1],(W/2),50);
+			tmpCtx.fillText(score[0] + ' : ' + score[1],(W/2), (H/2) + 75);
 
 			ctx.drawImage(tmpCanvas, 0, 0);
 			lastRender = new Date();

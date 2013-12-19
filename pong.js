@@ -19,7 +19,7 @@ var score = [0,0];
 
 var static = require('node-static');
 var file = new static.Server('./public');
-var ball = {x: 0.5,y:0.0};
+var ball = {x: 0.5,y:0.0,speedX:0.005, speedY:0.0005};
 var speedY = 0.005;
 var speedX = 0.005;
 
@@ -135,22 +135,24 @@ function resetBall(){
 setInterval(function(){
 
     if(noOfPlayers() >= 1) {
-        ball.x = ball.x + speedX;
-        ball.y = ball.y + speedY;
+        ball.x = ball.x + ball.speedX;
+        ball.y = ball.y + ball.speedY;
 
         if(ball.y < 0) {
-            speedY = -speedY;
+            ball.speedY = -ball.speedY;
+
+            
         }
 
         if(ball.y > 1){
-            speedY = -speedY;
+            ball.speedY = -ball.speedY;
         }
 
         if(ball.x <= 0){
             var collision = collisionDetect(0);
 
             if(collision){
-                speedX = (-speedX) + 0.001;
+                ball.speedX = (-ball.speedX) + 0.001;
                 ball.x = 0.001;
   
                 
@@ -173,7 +175,7 @@ setInterval(function(){
             var collision = collisionDetect(1);
 
             if(collision){
-                speedX = (-speedX) + 0.001;
+                ball.speedX = (-ball.speedX) + 0.001;
                 ball.x = 1 - 0.005;
 
                 for(var i= 0; i < clients.length; i++) {
@@ -184,7 +186,7 @@ setInterval(function(){
                 for(var i= 0; i < clients.length; i++) {
                     clients[i].emit('b', {x:ball.x, y:ball.y, score : score});
                 }
-                speedX = -0.010;
+                ball.speedX = -0.010;
                 ball.x = 0.5;
                 ball.y = Math.random();
             }
