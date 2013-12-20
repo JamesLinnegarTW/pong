@@ -193,7 +193,7 @@ setInterval(function(){
 
         if((!paddle.lastMove) || ((paddle.lastMove.getTime() + 10000) < now.getTime())) {
             
-            //removePaddle(keys[i]);
+            removePaddle(keys[i]);
         }
     }
 
