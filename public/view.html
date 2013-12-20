@@ -248,6 +248,10 @@
 			var tmpCtx = tmpCanvas.getContext("2d");
 			
 			resetCanvas(tmpCtx);
+			
+			tmpCtx.globalCompositeOperation="source-over";
+		    tmpCtx.drawImage(imageObj, (W/2) - (260/2), (H/2) - (157 / 2));
+
 			tmpCtx.globalCompositeOperation = "lighter";
 
 				if(trails.length > 0){
