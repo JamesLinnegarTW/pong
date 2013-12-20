@@ -197,7 +197,7 @@ setInterval(function(){
         }
     }
 
-},10000);
+},150000);
 
 setInterval(function(){
     var keys = Object.keys(paddles);
@@ -280,6 +280,8 @@ setInterval(function(){
 
             }
         }
+    } else {
+        score = [0,0];
     }
 
 },10);
