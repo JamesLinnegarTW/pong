@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MMOPong</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/spectrum.css">
+  <!-- Phone specific stuff -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+ 
+  <!--[if lt IE 9]>
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <script src='js/socket.io.js'></script>  
+  <script type='text/javascript'>
+// Client
+
+  $(function(){
+
+
+
+        var socket = io.connect(
+            'http://'+window.location.hostname+':9000/'
+        );
+
+        socket.on('connect', function () {
+              $('#new').click(function(){
+                socket.emit('newball', {}); 
+              });
+
+              $('#remove').click(function(){
+                socket.emit('removeball', {}); 
+              });
+      });
+
+});
+
+  </script>
+
+  <style type="text/css">
+    #paddle {
+      display:block;
+      background-color:black;
+      position:absolute;
+      left:0;
+      right:0;
+      height:20px;
+      top:50%;
+    }
+  </style>
+
+</head>
+<body>
+<button id="new">New balls please</button>
+<button id="remove">Dial it in fella'</button>
+</body>
+</html>

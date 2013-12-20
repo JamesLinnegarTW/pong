@@ -19,13 +19,26 @@ var score = [0,0];
 
 var static = require('node-static');
 var file = new static.Server('./public');
-var ball = {x: 0.5,y:0.0,speedX:0.005, speedY:0};
+
+var balls = [];
+
 
 require('http').createServer(function (request, response) {
     request.addListener('end', function () {
         file.serve(request, response);
     }).resume();
 }).listen(8081);
+
+
+function Ball(){
+    this.x = 0.5;
+    this.y = 0.5;
+    this.speedX = 0.005;
+    this.speedY = 0;
+    this.color = randomColor();
+}
+
+balls.push(new Ball());
 
 function randomColor(){
     return {
@@ -71,6 +84,18 @@ io.sockets.on('connection', function (socket) {
 
         for(var i= 0; i < clients.length; i++) {
             clients[i].emit('newUser', paddles[socket.id]);
+        }
+    });
+
+    socket.on('newball', function(){
+        if(balls.length < 5){
+            balls.push(new Ball());
+        }
+    });
+
+    socket.on('removeball', function(){
+        if(balls.length > 1){
+            balls.pop();
         }
     });
 
@@ -120,7 +145,7 @@ function removePaddle(id){
         reloadEverything();
 }
 
-function collisionDetect(side){
+function collisionDetect(side, ball){
    var keys = Object.keys(paddles);
    var paddle;
    var data = {};
@@ -138,21 +163,24 @@ function collisionDetect(side){
 
             data.speed = -(paddle.lastY - paddle.y) / 25;
 
-           data.color = paddle.color;
+           ball.color = paddle.color;
            return data;
         }
+
     }
     return false;
 }
 
 
-function resetBall(){
+function resetBall(i){
 
 
-    ball.x = 0.5;
-    ball.y = 0.5;
-    ball.speedX = 0.005;
-    ball.speedY = 0.0;
+    balls[i].x = 0.5;
+    balls[i].y = 0.5;
+
+    balls[i].speedX = Math.random() < 0.5 ? 0.005 : -0.005;
+
+    balls[i].speedY = 0.0;
 }
 
 setInterval(function(){
@@ -186,72 +214,72 @@ setInterval(function(){
 
 
     if(noOfPlayers() > 1) {
+        for(var b = 0; b < balls.length; b++){
+            var ball = balls[b];
+    
+            ball.x = ball.x + ball.speedX;
+            ball.y = ball.y + ball.speedY;            
 
-        ball.x = ball.x + ball.speedX;
-        ball.y = ball.y + ball.speedY;
 
-        if(ball.y < 0) {
-            ball.speedY = -ball.speedY;
-        }
 
-        if(ball.y > 1){
-            ball.speedY = -ball.speedY;
-        }
+            if(ball.y < 0) {
+                ball.speedY = -ball.speedY;
+            }
 
-        if(ball.x <= 0){
-            var collision = collisionDetect(0);
+            if(ball.y > 1){
+                ball.speedY = -ball.speedY;
+            }
 
-            if(collision){
-                ball.speedX = -(ball.speedX - 0.001);
-                ball.x = 0.001;
-                ball.speedY = ball.speedY + collision.speed;      
-                for(var i= 0; i < clients.length; i++) {
-                    clients[i].emit('c', collision.color);
-                }  
-            } else {
-                score[1]++;             
-                for(var i= 0; i < clients.length; i++) {
-                    clients[i].emit('b', {x:ball.x, y:ball.y, score:score});
+            if(ball.x <= 0){
+                var collision = collisionDetect(0, ball);
+
+                if(collision){
+                    ball.speedX = -(ball.speedX - 0.001);
+                    ball.x = 0.001;
+                    ball.speedY = ball.speedY + collision.speed;      
+                } else {
+                    score[1]++;             
+                    for(var i= 0; i < clients.length; i++) {
+                        clients[i].emit('b', {x:ball.x, y:ball.y, score:score, color: ball.color});
+                    }
+
+                    resetBall(b);
                 }
-
-                resetBall();
+                
             }
             
-        }
-        
-        if(ball.x >= 1) {
+            if(ball.x >= 1) {
 
-            var collision = collisionDetect(1);
+                var collision = collisionDetect(1, ball);
 
-            if(collision){
-                ball.speedX = -(ball.speedX + 0.001);
-                ball.x = 1 - 0.005;
-                ball.speedY = ball.speedY + collision.speed;      
+                if(collision){
+                    ball.speedX = -(ball.speedX + 0.001);
+                    ball.x = 1 - 0.005;
+                    ball.speedY = ball.speedY + collision.speed;      
 
-                for(var i= 0; i < clients.length; i++) {
-                    clients[i].emit('c', collision.color);
-                }  
-            } else {
-                score[0]++;           
-                for(var i= 0; i < clients.length; i++) {
-                    clients[i].emit('b', {x:ball.x, y:ball.y, score : score});
+                } else {
+                    score[0]++;           
+                    for(var i= 0; i < clients.length; i++) {
+                        clients[i].emit('b', {x:ball.x, y:ball.y, score : score, color: ball.color});
+                    }
+                    resetBall(b);
                 }
-                resetBall();
+
             }
 
-        }
-
-        for(var i= 0; i < clients.length; i++) {
-            clients[i].emit('ball', ball);
-        }
-
-        if(score[0] >= 21 || score[1] >= 21){
-            var winner = (score[0] > score[1])?0:1;
             for(var i= 0; i < clients.length; i++) {
-                clients[i].emit('win', {score:[0,0],winner:winner});
-            }   
-            score = [0,0];
+                clients[i].emit('ball', balls);
+            }
 
+            if(score[0] >= 7 || score[1] >= 7){
+                var winner = (score[0] > score[1])?0:1;
+                for(var i= 0; i < clients.length; i++) {
+                    clients[i].emit('win', {score:[0,0],winner:winner});
+                }   
+                score = [0,0];
+
+            }
         }
     }
+
 },10);

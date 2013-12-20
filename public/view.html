@@ -67,7 +67,7 @@
 		var ctx = canvas.getContext("2d");
 		var imageObj = new Image();
 		var lastRender = new Date();
-		var color = {r:255,g:0,b:0};
+
 	    var paddles = {};
 	    var score = [0,0];
 	    var W = window.innerWidth, H = window.innerHeight;
@@ -311,19 +311,16 @@
 		});
 		
 		socket.on('ball', function(data) {
-			trails.push(new Trail((data.x * W), (data.y * H), color ));
-
-		});
-
-		socket.on('c', function(data) {
-			color = data;
+			for(var i =0; i < data.length; i++){
+				trails.push(new Trail((data[i].x * W), (data[i].y * H), data[i].color ));
+			}
 		});
 
 		socket.on('b', function(data) {
 			var bang = (2 * (W * 0.02)) + 5;
 			
 			score = data.score;
-			fireworks.push(new Firework((data.x * W), (data.y * H), bang,  color ));
+			fireworks.push(new Firework((data.x * W), (data.y * H), bang,  data.color ));
 		});
 		
 		socket.on('newUser', function(data){
