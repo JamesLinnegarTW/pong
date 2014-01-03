@@ -20,14 +20,18 @@ var score = [0,0];
 var static = require('node-static');
 var file = new static.Server('./public');
 
-var balls = [];
+var world = {
+    balls : [],
+    score : [],
+    paddles: []
+};
 
 
 require('http').createServer(function (request, response) {
     request.addListener('end', function () {
         file.serve(request, response);
     }).resume();
-}).listen(8081);
+}).listen(80);
 
 
 function Ball(){
@@ -38,7 +42,7 @@ function Ball(){
     this.color = randomColor();
 }
 
-balls.push(new Ball());
+world.balls.push(new Ball());
 
 function randomColor(){
     return {
@@ -49,15 +53,15 @@ function randomColor(){
 }
 
 function noOfPlayers(){
-    return Object.keys(paddles).length;
+    return Object.keys(world.paddles).length;
 }
 
     function reloadEverything(){
-        var k = Object.keys(paddles);
+        var k = Object.keys(world.paddles);
         var temp = {};
         temp.p = [];
         for(var i = 0; i < k.length; i++){
-            temp.p.push(paddles[k[i]]);
+            temp.p.push(world.paddles[k[i]]);
         }
         temp.score = score;
         for(var i= 0; i < clients.length; i++) {
@@ -80,32 +84,29 @@ io.sockets.on('connection', function (socket) {
         var color = randomColor();
         socket.emit('color',color);
         var newPaddle = {u: new Date(), y:0.5, lastY:0.5, side: (noOfPlayers() % 2), color:color, lastMove: new Date()};
-        paddles[socket.id] = newPaddle;
+        world.paddles[socket.id] = newPaddle;
 
-        for(var i= 0; i < clients.length; i++) {
-            clients[i].emit('newUser', paddles[socket.id]);
-        }
     });
 
     socket.on('newball', function(){
-        if(balls.length < 5){
-            balls.push(new Ball());
+        if(world.balls.length < 5){
+            world.balls.push(new Ball());
         }
     });
 
     socket.on('removeball', function(){
-        if(balls.length > 1){
-            balls.pop();
+        if(world.balls.length > 1){
+            world.balls.pop();
         }
     });
 
     socket.on('moveUser', function(data){
         var y = data.y, now = new Date();
         
-        var paddle = paddles[socket.id];
+        var paddle = world.paddles[socket.id];
         paddle.y = y;
         paddle.lastMove = now;
-        paddles[socket.id] = paddle;
+        world.paddles[socket.id] = paddle;
         for(var i = 0; i < clients.length; i++) {
             clients[i].emit('moveUser', paddle);
         }
@@ -130,7 +131,7 @@ io.sockets.on('connection', function (socket) {
 
 function removePaddle(id){
         console.log('removing paddle', id);
-        if(paddles[id]) delete paddles[id]; 
+        if(world.paddles[id]) delete world.paddles[id]; 
 
         for(var i = 0; i < clients.length; i++){
             if (clients[i].id == id){
@@ -146,16 +147,16 @@ function removePaddle(id){
 }
 
 function collisionDetect(side, ball){
-   var keys = Object.keys(paddles);
+   var keys = Object.keys(world.paddles);
    var paddle;
    var data = {};
 
     if(side == 1 && noOfPlayers() == 1){
-        return paddles[keys[0]].color;
+        return world.paddles[keys[0]].color;
     }
 
     for(var i = 0; i < keys.length; i++){
-        paddle = paddles[keys[i]];
+        paddle = world.paddles[keys[i]];
 
         if(ball.y >= (paddle.y - 0.05) &&
            ball.y <= (paddle.y + 0.05) &&
@@ -173,38 +174,18 @@ function collisionDetect(side, ball){
 
 
 function resetBall(i){
-
-
-    balls[i].x = 0.5;
-    balls[i].y = 0.5;
-
-    balls[i].speedX = Math.random() < 0.5 ? 0.005 : -0.005;
-
-    balls[i].speedY = 0.0;
+    world.balls[i].x = 0.5;
+    world.balls[i].y = 0.5;
+    world.balls[i].speedX = Math.random() < 0.5 ? 0.005 : -0.005;
+    world.balls[i].speedY = 0.0;
 }
 
 setInterval(function(){
-   var keys = Object.keys(paddles);
-   var paddle;
-   var now = new Date();
-
-    for(var i = 0; i < keys.length; i++){
-        paddle = paddles[keys[i]];
-
-        if((!paddle.lastMove) || ((paddle.lastMove.getTime() + 10000) < now.getTime())) {
-            
-            removePaddle(keys[i]);
-        }
-    }
-
-},150000);
-
-setInterval(function(){
-    var keys = Object.keys(paddles);
+    var keys = Object.keys(world.paddles);
     var paddle;
 
     for(var i = 0; i < keys.length; i++){
-        paddle = paddles[keys[i]];
+        paddle = world.paddles[keys[i]];
         paddle.lastY = paddle.y;
     }
 }, 100);
@@ -214,8 +195,8 @@ setInterval(function(){
 
 
     if(noOfPlayers() > 1) {
-        for(var b = 0; b < balls.length; b++){
-            var ball = balls[b];
+        for(var b = 0; b < world.balls.length; b++){
+            var ball = world.balls[b];
     
             ball.x = ball.x + ball.speedX;
             ball.y = ball.y + ball.speedY;            
@@ -238,7 +219,8 @@ setInterval(function(){
                     ball.x = 0.001;
                     ball.speedY = ball.speedY + collision.speed;      
                 } else {
-                    score[1]++;             
+                    score[1]++; 
+
                     for(var i= 0; i < clients.length; i++) {
                         clients[i].emit('b', {x:ball.x, y:ball.y, score:score, color: ball.color});
                     }
@@ -258,17 +240,15 @@ setInterval(function(){
                     ball.speedY = ball.speedY + collision.speed;      
 
                 } else {
-                    score[0]++;           
+                    score[0]++;     
+
                     for(var i= 0; i < clients.length; i++) {
-                        clients[i].emit('b', {x:ball.x, y:ball.y, score : score, color: ball.color});
+                        clients[i].emit('b', {x:ball.x, y:ball.y, score:score, color: ball.color});
                     }
+
                     resetBall(b);
                 }
 
-            }
-
-            for(var i= 0; i < clients.length; i++) {
-                clients[i].emit('ball', balls);
             }
 
             if(score[0] >= 7 || score[1] >= 7){
@@ -276,12 +256,28 @@ setInterval(function(){
                 for(var i= 0; i < clients.length; i++) {
                     clients[i].emit('win', {score:[0,0],winner:winner});
                 }   
+
+
                 score = [0,0];
 
             }
         }
     } else {
         score = [0,0];
+    }
+
+    var data = {};
+    data.balls = world.balls;
+    data.paddles = [];
+    var k = Object.keys(world.paddles);
+
+    for(var i = 0; i < k.length; i++){
+        data.paddles.push(world.paddles[k[i]]);
+    }
+
+    for(var i= 0; i < clients.length; i++) {
+        world.time = new Date().getTime();;
+        clients[i].emit('w', data);
     }
 
 },10);

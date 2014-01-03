@@ -67,9 +67,10 @@
 		var ctx = canvas.getContext("2d");
 		var imageObj = new Image();
 		var lastRender = new Date();
-
-	    var paddles = {};
+		var serverTime = "";
+	    var paddles = [];
 	    var score = [0,0];
+	    var worldHistory = [];
 	    var W = window.innerWidth, H = window.innerHeight;
 
 
@@ -280,15 +281,13 @@
 					}
 				}
 
-				var keys = Object.keys(paddles);
-
-				for(var i = 0; i < keys.length; i++){
-					paddles[keys[i]].draw(tmpCtx);
+			
+				if(paddles.length > 0){
+					for(var i = 0; i < paddles.length; i++){
+						paddles[i].draw(tmpCtx);
+					}
 				}
 				
-
-			tmpCtx.globalCompositeOperation="source-over";
-		    tmpCtx.drawImage(imageObj, (W/2) - (260/2), (H/2) - (157 / 2));
 		
 		    tmpCtx.fillStyle = "white";
 			tmpCtx.font="20px Arial";
@@ -314,45 +313,27 @@
 	    	socket.emit('v', {});
 		});
 		
-		socket.on('ball', function(data) {
-			for(var i =0; i < data.length; i++){
-				trails.push(new Trail((data[i].x * W), (data[i].y * H), data[i].color ));
-			}
-		});
-
 		socket.on('b', function(data) {
 			var bang = (2 * (W * 0.02)) + 5;
 			
 			score = data.score;
 			fireworks.push(new Firework((data.x * W), (data.y * H), bang,  data.color ));
 		});
-		
-		socket.on('newUser', function(data){
-			console.log('new user', data);
-			paddles[data.u] = new Paddle(0.5, data.side, data.color);
-			console.log(paddles);
-		});
-		
-		socket.on('reload', function(data){
 
-			paddles = {};
-			console.log('reload', data);
-			score  = data.score;
-			for(var i = 0; i < data.p.length; i++){
-				paddles[data.p[i].u] = new Paddle(0.5, data.p[i].side, data.p[i].color);
+
+
+		socket.on('w', function(data){
+			serverTime = data.time;
+			worldHistory[data.time] = data;
+			paddles = [];
+			for(var i =0; i < data.balls.length; i++){
+				trails.push(new Trail((data.balls[i].x * W), (data.balls[i].y * H), data.balls[i].color ));
+			}
+			for(var i =0; i < data.paddles.length; i++){
+				paddles.push(new Paddle(data.paddles[i].y, data.paddles[i].side, data.paddles[i].color));
 			}
 		});
 
-		socket.on('moveUser', function(data){
-			if(paddles[data.u]){
-				paddles[data.u].setY(data.y);
-			}
-		});
-
-		socket.on('removeUser', function(data){
-			console.log('removeUser', data);
-			delete paddles[data.u];
-		});
 
 		socket.on('win', function(data){
 
