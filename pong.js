@@ -42,7 +42,7 @@ function Ball(){
     this.color = randomColor();
 }
 
-world.balls.push(new Ball());
+
 
 function randomColor(){
     return {
@@ -195,6 +195,7 @@ setInterval(function(){
 
 
     if(noOfPlayers() > 1) {
+        if(world.balls.length < 1) world.balls.push(new Ball());
         for(var b = 0; b < world.balls.length; b++){
             var ball = world.balls[b];
     
@@ -264,6 +265,7 @@ setInterval(function(){
         }
     } else {
         score = [0,0];
+        world.balls = [];
     }
 
     var data = {};

@@ -70,7 +70,6 @@
 		var serverTime = "";
 	    var paddles = [];
 	    var score = [0,0];
-	    var worldHistory = [];
 	    var W = window.innerWidth, H = window.innerHeight;
 
 
@@ -324,7 +323,6 @@
 
 		socket.on('w', function(data){
 			serverTime = data.time;
-			worldHistory[data.time] = data;
 			paddles = [];
 			for(var i =0; i < data.balls.length; i++){
 				trails.push(new Trail((data.balls[i].x * W), (data.balls[i].y * H), data.balls[i].color ));
