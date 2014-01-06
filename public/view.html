@@ -30,6 +30,7 @@
 	<canvas id="canvas"></canvas>
 
 	<script src='js/socket.io.js'></script> 
+	<script src='js/underscore.js'></script> 
 	<script type="text/javascript">
 
 
@@ -70,6 +71,8 @@
 		var serverTime = "";
 	    var paddles = [];
 	    var score = [0,0];
+	    var worldBuffer = [];
+	    var worldBufferIndex = -1;
 	    var W = window.innerWidth, H = window.innerHeight;
 
 
@@ -146,7 +149,8 @@
 		};
 
 
-		function Paddle(y, side, color){
+		function Paddle(y, side, color, name){
+
 			this.y = y;
 			this.side = side;
 			this.color = color;
@@ -156,6 +160,10 @@
 			}
 			
 			this.draw = function(ctx){
+
+				ctx.font = "bold 12px sans-serif";
+				var nameWidth = ctx.measureText(name);
+				//console.log(nameWidth);
 				if(this.color){
 					ctx.fillStyle = "rgb("+this.color.r+","+this.color.g+","+this.color.b+")";
 				} else {
@@ -163,8 +171,11 @@
 				}
 				if(this.side == 0){
 					ctx.fillRect(0,    (H * this.y) - ((H * 0.1)/2), 10, H * 0.1);
+					ctx.fillText(name, 20, (H * this.y));
 				} else {
 					ctx.fillRect(W-10, (H * this.y) - ((H * 0.1)/2), 10, H * 0.1);
+					ctx.fillText(name, W - (nameWidth.width + 20), (H * this.y));
+
 				}
 			}
 		}
@@ -323,12 +334,17 @@
 
 		socket.on('w', function(data){
 			serverTime = data.time;
+			worldBufferIndex++;
+			if(worldBufferIndex > 1000){
+				worldBufferIndex = 0;
+			}
+			worldBuffer[worldBufferIndex] = data;
 			paddles = [];
 			for(var i =0; i < data.balls.length; i++){
 				trails.push(new Trail((data.balls[i].x * W), (data.balls[i].y * H), data.balls[i].color ));
 			}
 			for(var i =0; i < data.paddles.length; i++){
-				paddles.push(new Paddle(data.paddles[i].y, data.paddles[i].side, data.paddles[i].color));
+				paddles.push(new Paddle(data.paddles[i].y, data.paddles[i].side, data.paddles[i].color, data.paddles[i].name));
 			}
 		});
 

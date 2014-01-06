@@ -1,5 +1,5 @@
 var io = require('socket.io').listen(9000);
-io.set('log level', 2);
+//io.set('log level', 2);
 
 
 // Import external files
@@ -78,12 +78,14 @@ io.sockets.on('connection', function (socket) {
     
     reloadEverything();
 
-    socket.on('user', function(){
-        console.log('new user');
-
+    socket.on('user', function(data){
         var color = randomColor();
+        var name = data.name;
+        if(name.length > 10){
+            name = name.substring(0,10);
+        }
         socket.emit('color',color);
-        var newPaddle = {u: new Date(), y:0.5, lastY:0.5, side: (noOfPlayers() % 2), color:color, lastMove: new Date()};
+        var newPaddle = {u: new Date(), y:0.5, lastY:0.5, side: (noOfPlayers() % 2), color:color, lastMove: new Date(), name:name};
         world.paddles[socket.id] = newPaddle;
 
     });

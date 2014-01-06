@@ -18,7 +18,7 @@
   <script src='js/pongControl.js'></script>
   <style type="text/css">
     #paddle {
-      display:block;
+      display:none;
       background-color:black;
       position:absolute;
       left:0;
@@ -26,10 +26,17 @@
       height:20px;
       top:50%;
     }
+    html {
+      -webkit-transition: all 2s ease;
+    }
   </style>
 
 </head>
 <body>
+  <div id="form">
+    <input type="text" id="name" placeholder="Player name" />
+    <button>Go</button>
+  </div>
   <div id="paddle"></div>
 </body>
 </html>
