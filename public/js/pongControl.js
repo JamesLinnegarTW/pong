@@ -1,12 +1,12 @@
 // Client
 
 function startGame(name) { 
-    var paddle = $('#paddle');
     var socket = io.connect(
         'http://'+window.location.hostname+':9000/'
     );
+
     $('#form').hide();
-    paddle.show();
+    $('canvas').show();
 
     function moveUser(e) {  
 
@@ -14,9 +14,9 @@ function startGame(name) {
 
         var data = {};
 
-        var y = (e.touches[0].clientY / window.innerHeight);
-        data.y = y;
-        $('#paddle').css('top', (y * 100) + '%');
+        var y = e.touches[0].clientY ;
+        data.y = (y/ window.innerHeight);
+        
         socket.emit('moveUser', data);          
 
     }
@@ -50,6 +50,8 @@ function startGame(name) {
 
 $(function(){
     $('button').click(function(){
-        startGame($('#name').val());
+        if($('#name').val()){
+            startGame($('#name').val());
+        }
     });
 });
