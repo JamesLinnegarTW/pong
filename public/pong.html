@@ -167,7 +167,7 @@
         var y = e.touches[0].clientY ;
         data.y = (y/ window.innerHeight);
         window.bar.top = y;
-        socket.emit('moveUser', data);          
+        socket.volatile.emit('moveUser', data);          
 
     }
 

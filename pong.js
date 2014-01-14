@@ -26,6 +26,8 @@ var world = {
     paddles: []
 };
 
+var tick = 0;
+
 
 require('http').createServer(function (request, response) {
     request.addListener('end', function () {
@@ -195,6 +197,8 @@ setInterval(function(){
 
 setInterval(function(){
 
+    tick++;
+    if(tick > 1000000) tick = 0;
 
     if(noOfPlayers() > 1) {
         if(world.balls.length < 1) world.balls.push(new Ball());
@@ -271,6 +275,7 @@ setInterval(function(){
     }
 
     var data = {};
+    data.tick = tick;
     data.balls = world.balls;
     data.paddles = [];
     var k = Object.keys(world.paddles);
@@ -278,10 +283,9 @@ setInterval(function(){
     for(var i = 0; i < k.length; i++){
         data.paddles.push(world.paddles[k[i]]);
     }
-
+    console.log(data);
     for(var i= 0; i < clients.length; i++) {
-        world.time = new Date().getTime();;
-        clients[i].emit('w', data);
+        clients[i].volatile.emit('w', data);
     }
 
 },10);
