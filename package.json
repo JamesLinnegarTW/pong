@@ -7,10 +7,19 @@
     "node-static": "^0.7.10",
     "socket.io": "~0.9.14"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "mocha": "^5.0.4",
+    "nodemon": "^1.17.1"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node pong.js"
+    "start": "nodemon lib/test.js --exec babel-node",
+    "build": "babel lib -d dist",
+    "serve": "node dist/test.js",
+    "test": "mocha --compilers js:babel-register"
   },
   "author": "",
   "license": "BSD-2-Clause",

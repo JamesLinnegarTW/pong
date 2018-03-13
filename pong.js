@@ -1,17 +1,7 @@
+var Ball = require("./src/ball");
+var randomColor = require("./src/randomColor");
 var io = require('socket.io').listen(9000);
 //io.set('log level', 2);
-
-
-// Import external files
-var fs = require('fs');
-var vm = require('vm');
-var includeInThisContext = function(path) {
-    var code = fs.readFileSync(path);
-    vm.runInThisContext(code, path);
-}.bind(this);
-
-includeInThisContext('./public/js/underscore.js');
-
 
 var clients = [];
 var paddles = [];
@@ -36,47 +26,29 @@ require('http').createServer(function (request, response) {
 }).listen(8080);
 
 
-function Ball(){
-    this.x = 0.5;
-    this.y = 0.5;
-    this.speedX = 0.005;
-    this.speedY = 0;
-    this.color = randomColor();
-}
-
-
-
-function randomColor(){
-    return {
-        r: Math.round((Math.random() * 255)),
-        g: Math.round((Math.random() * 255)),
-        b: Math.round((Math.random() * 255))
-    }
-}
-
 function noOfPlayers(){
-    return Object.keys(world.paddles).length;
+    var k = Object.keys(world.paddles);
+    return k.length;
 }
 
-    function reloadEverything(){
-        var k = Object.keys(world.paddles);
-        var temp = {};
-        temp.p = [];
-        for(var i = 0; i < k.length; i++){
-            temp.p.push(world.paddles[k[i]]);
-        }
-        temp.score = score;
-        for(var i= 0; i < clients.length; i++) {
-            clients[i].emit('reload', temp); //reload everything?
-        }
-
+function reloadEverything(){
+    var k = Object.keys(world.paddles);
+    var temp = {};
+    temp.p = [];
+    for(var i = 0; i < k.length; i++){
+        temp.p.push(world.paddles[k[i]]);
     }
+    temp.score = score;
+    for(var i= 0; i < clients.length; i++) {
+        clients[i].emit('reload', temp); //reload everything?
+    }
+
+}
 
 
 io.sockets.on('connection', function (socket) {
-    console.log("hello");
-    clients.push(socket);
 
+    clients.push(socket);
 
     reloadEverything();
 
@@ -117,8 +89,6 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('disconnect', function(){
-        console.log('byeeee');
-
         for(var i= 0; i < clients.length; i++) {
             if(clients[i].id == socket.id){
                 clients.splice(i,1);
@@ -185,13 +155,9 @@ function resetBall(i){
 }
 
 setInterval(function(){
-    var keys = Object.keys(world.paddles);
-    var paddle;
-
-    for(var i = 0; i < keys.length; i++){
-        paddle = world.paddles[keys[i]];
-        paddle.lastY = paddle.y;
-    }
+    paddles.map((paddle)=> {
+      paddle.lastY = paddle.y;
+    });
 }, 100);
 
 
@@ -207,8 +173,6 @@ setInterval(function(){
 
             ball.x = ball.x + ball.speedX;
             ball.y = ball.y + ball.speedY;
-
-
 
             if(ball.y < 0) {
                 ball.speedY = -ball.speedY;
