@@ -13,7 +13,7 @@
     "babel-preset-stage-2": "^6.24.1",
     "babel-register": "^6.26.0",
     "mocha": "^5.0.4",
-    "nodemon": "^1.17.1"
+    "nodemon": "^1.17.2"
   },
   "scripts": {
     "start": "nodemon lib/test.js --exec babel-node",
