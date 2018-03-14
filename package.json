@@ -1,5 +1,5 @@
 {
-  "name": "fireworks",
+  "name": "Pong",
   "version": "0.0.1",
   "description": "ERROR: No README.md file found!",
   "main": "server.js",
@@ -23,8 +23,7 @@
   },
   "author": "",
   "license": "BSD-2-Clause",
-  "subdomain": "jlinnega-fireworks",
   "engines": {
-    "node": "0.10.x"
+    "node": "8.9.1"
   }
 }
