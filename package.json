@@ -15,6 +15,7 @@
     "nodemon": "^1.17.2"
   },
   "scripts": {
+    "postinstall": "npm run build",
     "start": "nodemon lib/index.js --exec babel-node",
     "build": "babel lib -d dist",
     "serve": "node dist/index.js",
