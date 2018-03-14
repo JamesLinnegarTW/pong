@@ -15,7 +15,7 @@
     "nodemon": "^1.17.2"
   },
   "scripts": {
-    "start": "nodemon lib/test.js --exec babel-node",
+    "start": "nodemon lib/index.js --exec babel-node",
     "build": "babel lib -d dist",
     "serve": "node dist/test.js",
     "test": "mocha --compilers js:babel-register"
