@@ -1,1 +1,1 @@
-web: node pong.js
+web: npm run serve
