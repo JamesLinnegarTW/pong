@@ -17,7 +17,7 @@
   "scripts": {
     "start": "nodemon lib/index.js --exec babel-node",
     "build": "babel lib -d dist",
-    "serve": "node dist/test.js",
+    "serve": "node dist/index.js",
     "test": "mocha --compilers js:babel-register"
   },
   "author": "",
